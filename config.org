@@ -1,0 +1,322 @@
+#+TITLE: Doom Emacs Literate Config
+#+AUTHOR: Patrick Faley
+#+EMAIL: patrick.faley@gmail.com
+#+LANGUAGE: en
+#+OPTIONS: toc:2
+
+* Introduction
+This is my config file for Doom Emacs. More information about creating a literate config can be found [[https://docs.doomemacs.org/latest/modules/config/literate/][here]]. This section just contains some background about various parts of the process.
+
+** Helpful Doom functions
+Here is an excerpt from the default ~config.el~ file about some helpful functions:
+
+Here are some additional functions/macros that could help you configure Doom:
+
+- ~load!~ for loading external *.el files relative to this one
+- ~use-package!~ for configuring packages
+- ~after!~ for running code after a package has loaded
+- ~add-load-path!~ for adding directories to the ~load-path~ relative to
+  this file. Emacs searches the ~load-path~ when you load packages with
+  ~require~ or ~use-package~.
+- ~map!~ for binding new keys
+
+To get information about any of these functions/macros, move the cursor over
+the highlighted symbol at press ~K~ (non-evil users must press ~C-c c k~).
+This will open documentation for it, including demos of how they are used.
+
+You can also try ~gd~ (or ~C-c c d~) to jump to their definition and see how
+they are implemented.
+
+** Adding Packages to Doom
+To install a package with Doom you must declare them here and run ~doom sync~
+on the command line, then restart Emacs for the changes to take effect -- or
+use ~M-x doom/reload~.
+
+To install SOME-PACKAGE from MELPA, ELPA or emacsmirror: ~(package! some-package)~
+
+To install a package directly from a remote git repo, you must specify a
+~:recipe~. You'll find documentation on what ~:recipe~ accepts here:
+https://github.com/raxod502/straight.el#the-recipe-format
+
+#+begin_src emacs-lisp :tangle no
+(package! another-package
+  :recipe (:host github :repo "username/repo"))
+#+end_src
+
+If the package you are trying to install does not contain a PACKAGENAME.el
+file, or is located in a subdirectory of the repo, you'll need to specify
+~:files~ in the ~:recipe~:
+
+#+begin_src emacs-lisp :tangle no
+(package! this-package
+  :recipe (:host github :repo "username/repo"
+           :files ("some-file.el" "src/lisp/*.el")))
+#+end_src
+
+If you'd like to disable a package included with Doom, you can do so here
+with the `:disable' property: ~(package! builtin-package :disable t)~
+
+You can override the recipe of a built in package without having to specify
+all the properties for ~:recipe~. These will inherit the rest of its recipe
+from Doom or MELPA/ELPA/Emacsmirror:
+
+#+begin_src emacs-lisp :tangle no
+(package! builtin-package :recipe (:nonrecursive t))
+(package! builtin-package-2 :recipe (:repo "myfork/package"))
+#+end_src
+
+Specify a ~:branch~ to install a package from a particular branch or tag.
+This is required for some packages whose default branch isn't 'master' (which
+our package manager can't deal with; see raxod502/straight.el#279)
+
+#+begin_src emacs-lisp :tangle no
+(package! builtin-package :recipe (:branch "develop"))
+#+end_src
+
+Use ~:pin~ to specify a particular commit to install.
+
+#+begin_src emacs-lisp :tangle no
+;(package! builtin-package :pin "1a2b3c4d5e")
+#+end_src
+
+
+Doom's packages are pinned to a specific commit and updated from release to
+release. The `unpin!' macro allows you to unpin single packages: ~(unpin! pinned-package)~
+
+or multiple packages: ~(unpin! pinned-package another-pinned-package)~
+
+Or *all* packages (NOT RECOMMENDED; will likely break things: ~(unpin! t)~
+
+** Font Configuration
+The following is an excerpt from the default ~config.el~ regarding font configuration:
+
+Doom exposes five (optional) variables for controlling fonts in Doom. Here
+are the three important ones:
+
+- ~doom-font~
+- ~doom-variable-pitch-font~
+- ~doom-big-font~ - used for ~doom-big-font-mode~; use this for presentations or streaming.
+
+They all accept either a font-spec, font string ~("Input Mono-12")~, or xlfd font string. You generally only need these two:
+
+
+#+begin_src emacs-lisp  :tangle no
+(setq doom-font (font-spec :family "Iosevka Term" :size 22 :weight 'light))
+(setq doom-font (font-spec :family "Iosevka Term" :size 32 :weight 'emi-light)
+      doom-variable-pitch-font (font-spec :family "sans" :size 13))
+(setq doom-font "Iosevka Term")
+#+end_src
+
+** About Tangling
+Tangling is the process by which an org mode file (like this one) is converted into source files. When Doom is running its sync, it will read in this file, and send all of the code snippets with a language label of ~emacs-lisp~ to their respective files. There are a few different ways to configure this by giving the source block different tags:
+
+- Specifying ~:tangle yes~ will force Doom to tangle a non-elisp block.
+- Specifying ~:tangle no~ will make Doom ignore the source block.
+- Specifying ~:tangle <filename>~ will tangle to some other file name (the default being ~config.el~).
+
+* TODO Tasks [9/12]
+- [X] Add personal information
+- [X] Set theme
+- [X] Add functionality for line numbers
+- [X] Add OS detection/flag
+- [X] Make sure Windows Terminal keybindings don't conflict with Emacs
+- [X] Transfer knowledge from the built-in comments.
+- [X] Add WSL support
+  - [X] Add WSL clipboard support
+  - [X] Integrate with Chrome browser
+- [X] Check if ~(setq display-line-numbers-type t)~ is necessary
+- [X] Ensure all custom packages are present
+- [-] Configure org-mode
+  - [X] Set directory
+  - [X] org-capture
+  - [ ] org-contacts (do in a more Doom-compatible way)
+- [ ] Python Configuration
+- [ ] Configure Vim support
+  - [ ] ~C-a~, ~C-x~ to increment/decrement numbers
+  - [ ] ~C-k~ to insert digraph numbers
+  - [ ] ~g j~ and ~g k~ to move wrapped lines
+  - [ ] Add ~evil-surround~ bindings
+
+* Bug Fixes
+This section contains any code snippets which don't really add any features, but fix some strange quirk in Doom or Emacs.
+
+** Missing ~gitconfig~
+This is a strange error which pops up every once in a while. You might notice that none of the ~SPC~ keybindings work. I'm not sure why this code snippet solves it, but it does.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! gitconfig-mode
+	  :recipe (:host github :repo "magit/git-modes"
+			 :files ("gitconfig-mode.el")))
+
+(package! gitignore-mode
+	  :recipe (:host github :repo "magit/git-modes"
+			 :files ("gitignore-mode.el")))
+#+end_src
+
+* Personal Information
+The following command is used to set both name and email address.
+
+#+begin_src emacs-lisp
+(setq user-full-name "Patrick Faley"
+      user-mail-address "patrick.faley@8451.com")
+#+end_src
+
+* Cosmetics
+** Themes
+*** New Themes
+We install any non-included themes below.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! spacemacs-theme)
+#+end_src
+
+*** Default Theme
+
+The default theme can be set using the below command. There are several themes available, including the standard themes, the Doom themes, and any themes installed in ~packages.el~.
+
+#+begin_src emacs-lisp
+(setq doom-theme 'doom-gruvbox)
+#+end_src
+
+The command to change color schemes mid-session is ~load-theme~, which is mapped to ~SPC h t~ by default.
+
+** Line Numbers
+The code below is for controlling how line numbers manifest. I enjoy having it so that line numbers are relative in normal mode (to aid with jumps/yanks/etc.) and absolute everywhere else. There are a few steps to enabling this.
+
+The standard (boring) way of doing this can be seen below.
+
+- ~t~: the default, enabling absolute line numbers
+- ~relative~: for relative line numbers
+- ~nil~: to disable line numbers
+
+#+begin_src emacs-lisp :tangle no
+(setq display-line-numbers-type t)
+#+end_src
+
+In our fun way, we define a couple functions which call the functions to enable absolute/relative line numbers only if we want to have line numbers enabled (which is tested by the ~display-line-numbers~ variable).
+
+#+begin_src emacs-lisp
+(defun safe-enable-relative-line-numbers ()
+  "Enable relative line numbers only if line numbers are enabled"
+  (if display-line-numbers
+      (menu-bar--display-line-numbers-mode-relative)))
+
+(defun safe-enable-absolute-line-numbers ()
+  "Enable absolute line numbers only if line numbers are enabled"
+  (if display-line-numbers
+      (menu-bar--display-line-numbers-mode-absolute)))
+#+end_src
+
+Finally, we make it so that these functions are called when transitioning into and out of ~normal~ mode. This is accomplished using "hooks". When certain actions occur, a list of accompanying functions will be run to ensure that the proper context changes occur. The calls to run these functions are called "hooks".
+
+#+begin_src emacs-lisp
+(add-hook 'evil-normal-state-entry-hook 'safe-enable-relative-line-numbers)
+(add-hook 'evil-normal-state-exit-hook 'safe-enable-absolute-line-numbers)
+#+end_src
+
+* Platform-Specific
+** WSL
+There are a couple of quirks for working with the Windows Subsystem for Linux (WSL), especially in TUI mode.
+
+*** Determining WSL
+We use the following flag to determine if we are in WSL. It checks to see if the system is "gnu/linux" and if there is an environment variable present called ~$WSLENV~.
+
+#+begin_src emacs-lisp
+(setq using-wsl (and (eq system-type 'gnu/linux)
+                     (getenv "WSLENV")))
+#+end_src
+
+*** Clipboard
+One potential issue is that the Windows clipboard may not link up with the default Emacs kill chain. The following functions allow the user to use Powershell to circumvent this issue.
+
+#+begin_src emacs-lisp
+(when using-wsl
+    (defun wsl-copy (start end)
+    (interactive "r")
+    (shell-command-on-region start end "clip.exe")
+    (deactivate-mark))
+
+    (defun wsl-paste ()
+    (interactive)
+    (let ((clipboard
+        (shell-command-to-string "powershell.exe -command 'Get-Clipboard' 2> /dev/null")))
+        (setq clipboard (replace-regexp-in-string "\r" "" clipboard)) ; Remove Windows ^M characters
+        (setq clipboard (substring clipboard 0 -1)) ; Remove newline added by Powershell
+        (insert clipboard))))
+#+end_src
+
+By default, we will bind these to ~SPC i c~ and ~SPC i w~ respectively.
+
+#+begin_src emacs-lisp
+(when using-wsl
+    (map! :leader
+        :desc "Copy to Windows" "i c" #'wsl-copy)
+
+    (map! :leader
+        :desc "Insert from Windows" "i w" #'wsl-paste))
+#+end_src
+
+*** Configuring Browser
+The following code sets the default browser to the system browser, which enables Emacs to open links in the browser.
+
+#+begin_src emacs-lisp
+(when using-wsl
+    (let ((cmd-exe "/mnt/c/Windows/System32/cmd.exe")
+          (cmd-args '("/c" "start")))
+    (when (file-exists-p cmd-exe)
+        (setq browse-url-generic-program  cmd-exe
+              browse-url-generic-args     cmd-args
+              browse-url-browser-function 'browse-url-generic
+              search-web-default-browser 'browse-url-generic))))
+#+end_src
+
+* Org Mode
+** Defaults
+Here, we set the default directory for Org mode files.
+
+#+begin_src emacs-lisp
+(setq org-directory "~/org/")
+#+end_src
+
+** Org-Drill
+Org Drill is a useful package which extends Org Mode with the ability to use Anki-like spaced repetition flash cards, with all of the definitions and such stored in an Org file. We first install the package below.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! org-drill)
+#+end_src
+
+We combine this package with ~org-capture~ to enable the efficient creation of new flashcards. Capture templates can be accessed with ~SPC X~. Doom has some built in. The code below sets a main key as ~d~ to get to the Drill templates, with sub-keys for each specific template.
+
+#+begin_src emacs-lisp
+(after! org
+  (setq org-capture-templates
+        (append org-capture-templates
+                ;; This is a grouping of many templates
+                '(("d" "Org-Drill Templates")
+
+                ;; This is the beginning of a single template:
+                ;; "ds" is the key, "Spanish" is the description,
+                ;; `entry` denotes that this has a header
+                ;; file+headline specifies to put it in `spanish.org`
+                ;; under the "Definitions" headline
+                ;; The next line specifies the location of the template
+                ("ds" "Spanish" entry
+                    (file+headline "~/org/flashcards/spanish.org" "Definitions")
+                    (file "~/org/templates/tpl-vocab.txt"))))))
+#+end_src
+
+** Contact Management
+I've been experimenting with using the ~org-contacts~ package to manage my contacts. It includes the ability to apply common tags for things like name, email, and number, as well as useful information like birthdays and just general notes. The following code block configures the ~org-contacts~ package.
+
+#+begin_src emacs-lisp
+(use-package org-contacts
+  :ensure nil
+  :after org
+  :custom (org-contacts-files '("~/org/contacts.org")))
+#+end_src
+
+To search through the ~contacts.org~ file, I've been experimenting with ~org-ql~, which uses an unholy amalgamation of Lisp and SQL to allow you to query against an Org file. We install this package with the below code.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! org-ql)
+#+end_src
