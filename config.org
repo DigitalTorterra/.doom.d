@@ -114,7 +114,7 @@ Tangling is the process by which an org mode file (like this one) is converted i
 - Specifying ~:tangle no~ will make Doom ignore the source block.
 - Specifying ~:tangle <filename>~ will tangle to some other file name (the default being ~config.el~).
 
-* TODO Tasks [9/12]
+* TODO Tasks [10/12]
 - [X] Add personal information
 - [X] Set theme
 - [X] Add functionality for line numbers
@@ -126,16 +126,15 @@ Tangling is the process by which an org mode file (like this one) is converted i
   - [X] Integrate with Chrome browser
 - [X] Check if ~(setq display-line-numbers-type t)~ is necessary
 - [X] Ensure all custom packages are present
+- [X] Configure Vim support
+  - [X] ~C-a~, ~C-x~ to increment/decrement numbers (use ~g -~ and ~g =~)
+  - [X] ~C-k~ to insert digraph numbers
+  - [X] ~g j~ and ~g k~ to move wrapped lines
+- [ ] Python Configuration
 - [-] Configure org-mode
   - [X] Set directory
   - [X] org-capture
   - [ ] org-contacts (do in a more Doom-compatible way)
-- [ ] Python Configuration
-- [ ] Configure Vim support
-  - [ ] ~C-a~, ~C-x~ to increment/decrement numbers
-  - [ ] ~C-k~ to insert digraph numbers
-  - [ ] ~g j~ and ~g k~ to move wrapped lines
-  - [ ] Add ~evil-surround~ bindings
 
 * Bug Fixes
 This section contains any code snippets which don't really add any features, but fix some strange quirk in Doom or Emacs.
@@ -158,7 +157,7 @@ The following command is used to set both name and email address.
 
 #+begin_src emacs-lisp
 (setq user-full-name "Patrick Faley"
-      user-mail-address "patrick.faley@8451.com")
+      user-mail-address "patrick.faley@gmail.com")
 #+end_src
 
 * Cosmetics
@@ -175,7 +174,7 @@ We install any non-included themes below.
 The default theme can be set using the below command. There are several themes available, including the standard themes, the Doom themes, and any themes installed in ~packages.el~.
 
 #+begin_src emacs-lisp
-(setq doom-theme 'doom-gruvbox)
+(setq doom-theme 'doom-one)
 #+end_src
 
 The command to change color schemes mid-session is ~load-theme~, which is mapped to ~SPC h t~ by default.
@@ -270,6 +269,22 @@ The following code sets the default browser to the system browser, which enables
               search-web-default-browser 'browse-url-generic))))
 #+end_src
 
+* Compatibility with Vim
+There are some useful things in Vim which can be done in Doom, but may need a slightly different workflow. This section explains some of them, and also contains a couple of new keybindings to bring the two behaviors closer in line to each other.
+
+** Increment/Decrement at Point
+In Vim, you can use ~C-a~ and ~C-x~ in Normal mode to increment or decrement at point. In Doom, these are remapped to ~g =~ and ~g -~.
+
+** Digraphs
+In Vim, you can use ~C-k~ to enter a digraph insertion menu, which provides a shorthand for the insertion of common non-keyboard symbols using two-key shorthands. The easiest way to replace this in Doom is with ~SPC i u~ which lets you insert any Unicode character based on a search field.
+
+There is also a ~evil-insert-digraph~ function which is not bound to anything by default. We will bind it to ~SPC i d~.
+
+#+begin_src emacs-lisp
+(map! :leader
+    :desc "Insert digraph" "i d" #'evil-insert-digraph)
+#+end_src
+
 * Org Mode
 ** Defaults
 Here, we set the default directory for Org mode files.
@@ -301,8 +316,8 @@ We combine this package with ~org-capture~ to enable the efficient creation of n
                 ;; under the "Definitions" headline
                 ;; The next line specifies the location of the template
                 ("ds" "Spanish" entry
-                    (file+headline "~/org/flashcards/spanish.org" "Definitions")
-                    (file "~/org/templates/tpl-vocab.txt"))))))
+                    (file+headline (concat org-directory "flashcards/spanish.org") "Definitions")
+                    (file (concat org-directory "templates/tpl-vocab.txt")))))))
 #+end_src
 
 ** Contact Management
