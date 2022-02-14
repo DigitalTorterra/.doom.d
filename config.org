@@ -157,7 +157,7 @@ The following command is used to set both name and email address.
 
 #+begin_src emacs-lisp
 (setq user-full-name "Patrick Faley"
-      user-mail-address "patrick.faley@gmail.com")
+      user-mail-address "patrick.faley@8451.com")
 #+end_src
 
 * Cosmetics
