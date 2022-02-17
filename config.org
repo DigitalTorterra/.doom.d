@@ -1,6 +1,6 @@
 #+TITLE: Doom Emacs Literate Config
 #+AUTHOR: Patrick Faley
-#+EMAIL: patrick.faley@gmail.com
+#+EMAIL: patrick.faley@8451.com
 #+LANGUAGE: en
 #+OPTIONS: toc:2
 
