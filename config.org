@@ -293,6 +293,17 @@ Here, we set the default directory for Org mode files.
 (setq org-directory "~/org/")
 #+end_src
 
+** General Key Bindings
+Here, we define any key bindings which are relevant to all of Org Mode.
+
+*** Source Blocks
+First, I want to remap the function to insert source blocks, which is ~org-insert-structure-template~. By default, it's ~C-c C-,~, which works fine in most cases, but can have some strange interactions. Here, we can remap it to ~SPC m S~.
+
+#+begin_src emacs-lisp
+(map! :leader
+    :desc "Insert structure template" "m S" #'org-insert-structure-template)
+#+end_src
+
 ** Org-Drill
 Org Drill is a useful package which extends Org Mode with the ability to use Anki-like spaced repetition flash cards, with all of the definitions and such stored in an Org file. We first install the package below.
 
