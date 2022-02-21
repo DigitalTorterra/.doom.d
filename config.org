@@ -294,6 +294,15 @@ Here, we set the default directory for Org mode files.
 (setq org-directory "~/org/")
 #+end_src
 
+** LaTeX
+Here, we add any code for working with math inside LaTeX.
+
+The below snippet should add LaTeX syntax highlighting.
+
+#+begin_src emacs-lisp
+(setq org-highlight-latex-and-related '(latex script entities))
+#+end_src
+
 ** General Key Bindings
 Here, we define any key bindings which are relevant to all of Org Mode.
 
