@@ -135,6 +135,7 @@ Tangling is the process by which an org mode file (like this one) is converted i
   - [X] Set directory
   - [X] org-capture
   - [ ] org-contacts (do in a more Doom-compatible way)
+  - [ ] Make ~org-sync~ executable from Emacs
 
 * Bug Fixes
 This section contains any code snippets which don't really add any features, but fix some strange quirk in Doom or Emacs.
@@ -291,6 +292,15 @@ Here, we set the default directory for Org mode files.
 
 #+begin_src emacs-lisp
 (setq org-directory "~/org/")
+#+end_src
+
+** LaTeX
+Here, we add any code for working with math inside LaTeX.
+
+The below snippet should add LaTeX syntax highlighting.
+
+#+begin_src emacs-lisp
+(setq org-highlight-latex-and-related '(latex script entities))
 #+end_src
 
 ** General Key Bindings
