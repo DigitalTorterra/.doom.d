@@ -135,7 +135,7 @@ Tangling is the process by which an org mode file (like this one) is converted i
 - [-] Configure org-mode
   - [X] Set directory
   - [X] org-capture
-  - [-] Make ~org-sync~ executable from Emacs
+  - [X] Make ~org-sync~ executable from Emacs
   - [ ] org-contacts (do in a more Doom-compatible way)
 
 * Bug Fixes
@@ -388,5 +388,12 @@ Next, we define a function to perform the shell calls.
     (shell-command pull-command)
     (shell-command push-command))
 )
+#+end_src
+
+Finally, we have some code to bind the function we just created to ~SPC m R~.
+
+#+begin_src emacs-lisp
+(map! :leader
+    :desc "Sync org directory" "m R" #'org-sync)
 #+end_src
 #+end_src
