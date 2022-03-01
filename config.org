@@ -287,6 +287,13 @@ There is also a ~evil-insert-digraph~ function which is not bound to anything by
     :desc "Insert digraph" "i d" #'evil-insert-digraph)
 #+end_src
 
+** Vimscript Syntax Highlighting
+This is mostly just for ~org~ files where we want to store information about Vim learning. Here, we install a plug-in to work with Vimscript files.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! vimrc-mode)
+#+end_src
+
 * Org Mode
 ** Defaults
 Here, we set the default directory for Org mode files.
