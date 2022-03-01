@@ -114,7 +114,7 @@ Tangling is the process by which an org mode file (like this one) is converted i
 - Specifying ~:tangle no~ will make Doom ignore the source block.
 - Specifying ~:tangle <filename>~ will tangle to some other file name (the default being ~config.el~).
 
-* TODO Tasks [9/12]
+* TODO Tasks [10/12]
 - [X] Add personal information
 - [X] Set theme
 - [X] Add functionality for line numbers
@@ -126,17 +126,17 @@ Tangling is the process by which an org mode file (like this one) is converted i
   - [X] Integrate with Chrome browser
 - [X] Check if ~(setq display-line-numbers-type t)~ is necessary
 - [X] Ensure all custom packages are present
-- [-] Configure Vim support
+- [X] Configure Vim support
   - [X] ~C-a~, ~C-x~ to increment/decrement numbers (use ~g -~ and ~g =~)
   - [X] ~C-k~ to insert digraph numbers
   - [X] ~g j~ and ~g k~ to move wrapped lines
-  - [ ] Configure syntax highlighting for vimscript
+  - [X] Configure syntax highlighting for vimscript
 - [ ] Python Configuration
 - [-] Configure org-mode
   - [X] Set directory
   - [X] org-capture
+  - [X] Make ~org-sync~ executable from Emacs
   - [ ] org-contacts (do in a more Doom-compatible way)
-  - [ ] Make ~org-sync~ executable from Emacs
 
 * Bug Fixes
 This section contains any code snippets which don't really add any features, but fix some strange quirk in Doom or Emacs.
@@ -299,7 +299,7 @@ This is mostly just for ~org~ files where we want to store information about Vim
 Here, we set the default directory for Org mode files.
 
 #+begin_src emacs-lisp
-(setq org-directory "~/org/")
+(setq org-directory "/home/pfaley/org/")
 #+end_src
 
 ** LaTeX
@@ -363,4 +363,37 @@ To search through the ~contacts.org~ file, I've been experimenting with ~org-ql~
 
 #+begin_src emacs-lisp :tangle packages.el
 (package! org-ql)
+#+end_src
+
+** Syncing Org Files
+As part of my Org file management, I use a Raspberry Pi NAS for keeping a backup of my Org directory and syncing across devices. I initially did this as a shell script, but it would be convenient to have easy integration with Emacs.
+
+First, we define some variables with the location of the remote directory.
+
+#+begin_src emacs-lisp
+(setq org-remote-addr "PiNAS")
+(setq org-remote-directory "/media/pi/MyExternalDrive/org/")
+#+end_src
+
+Next, we define a function to perform the shell calls.
+
+#+begin_src emacs-lisp
+(defun org-sync ()
+  "Syncs local Org directory with a remote copy."
+  (interactive)
+  (let* ((remote-path (format "%s:%s" org-remote-addr org-remote-directory))
+         (base-command "rsync -havuz")
+         (pull-command (format "%s %s %s" base-command remote-path org-directory))
+         (push-command (format "%s %s %s" base-command org-directory remote-path)))
+    (shell-command pull-command)
+    (shell-command push-command))
+)
+#+end_src
+
+Finally, we have some code to bind the function we just created to ~SPC m R~.
+
+#+begin_src emacs-lisp
+(map! :leader
+    :desc "Sync org directory" "m R" #'org-sync)
+#+end_src
 #+end_src
