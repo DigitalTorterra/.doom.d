@@ -114,7 +114,7 @@ Tangling is the process by which an org mode file (like this one) is converted i
 - Specifying ~:tangle no~ will make Doom ignore the source block.
 - Specifying ~:tangle <filename>~ will tangle to some other file name (the default being ~config.el~).
 
-* TODO Tasks [9/12]
+* TODO Tasks [10/12]
 - [X] Add personal information
 - [X] Set theme
 - [X] Add functionality for line numbers
@@ -126,11 +126,11 @@ Tangling is the process by which an org mode file (like this one) is converted i
   - [X] Integrate with Chrome browser
 - [X] Check if ~(setq display-line-numbers-type t)~ is necessary
 - [X] Ensure all custom packages are present
-- [-] Configure Vim support
+- [X] Configure Vim support
   - [X] ~C-a~, ~C-x~ to increment/decrement numbers (use ~g -~ and ~g =~)
   - [X] ~C-k~ to insert digraph numbers
   - [X] ~g j~ and ~g k~ to move wrapped lines
-  - [ ] Configure syntax highlighting for vimscript
+  - [X] Configure syntax highlighting for vimscript
 - [ ] Python Configuration
 - [-] Configure org-mode
   - [X] Set directory
