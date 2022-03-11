@@ -434,6 +434,6 @@ Next, we ensure that it loads in at the right time.
 Finally, we configure the default Python shell:
 
 #+begin_src emacs-lisp
-(setq python-shell-interpreter "python3 -m IPython"
+(setq python-shell-interpreter "ipython"
       python-shell-interpreter-args "-i --simple-prompt")
 #+end_src
