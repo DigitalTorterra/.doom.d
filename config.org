@@ -396,3 +396,8 @@ Finally, we have some code to bind the function we just created to ~SPC m R~.
 (map! :leader
     :desc "Sync org directory" "m R" #'org-sync)
 #+end_src
+
+* Language-Specific Tweaks
+In this section, we perform any customization that is specific to a given programming language.
+
+** Python
