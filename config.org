@@ -114,7 +114,7 @@ Tangling is the process by which an org mode file (like this one) is converted i
 - Specifying ~:tangle no~ will make Doom ignore the source block.
 - Specifying ~:tangle <filename>~ will tangle to some other file name (the default being ~config.el~).
 
-* TODO Tasks [10/12]
+* TODO Tasks [11/12]
 - [X] Add personal information
 - [X] Set theme
 - [X] Add functionality for line numbers
@@ -126,13 +126,14 @@ Tangling is the process by which an org mode file (like this one) is converted i
   - [X] Integrate with Chrome browser
 - [X] Check if ~(setq display-line-numbers-type t)~ is necessary
 - [X] Ensure all custom packages are present
-- [X] Configure Vim support
+- [X] Configure Vim support [4/4]
   - [X] ~C-a~, ~C-x~ to increment/decrement numbers (use ~g -~ and ~g =~)
   - [X] ~C-k~ to insert digraph numbers
   - [X] ~g j~ and ~g k~ to move wrapped lines
   - [X] Configure syntax highlighting for vimscript
-- [ ] Python Configuration
-- [-] Configure org-mode
+- [X] Python Configuration [1/1]
+  - [X] Elpy
+- [-] Configure org-mode [3/4]
   - [X] Set directory
   - [X] org-capture
   - [X] Make ~org-sync~ executable from Emacs
@@ -396,4 +397,43 @@ Finally, we have some code to bind the function we just created to ~SPC m R~.
 (map! :leader
     :desc "Sync org directory" "m R" #'org-sync)
 #+end_src
+
+* Language-Specific Tweaks
+In this section, we perform any customization that is specific to a given programming language.
+
+** Python
+By default, Doom provides some decent Python package integration. To get proper use, make sure the following packages are installed with ~pip~:
+- ~pytest~: for running tests
+- ~nose~: also for running tests
+- ~black~: for formatting
+- ~pyflakes~: for managing imports
+- ~isort~
+- ~python-language-server~: for LSP
+
+For help, look at [[https://docs.doomemacs.org/latest/modules/lang/python/][the Doom docs]]. This has the packages to install, as well as a summary of some useful keybindings.
+
+*** Elpy
+The default Doom stuff for Python is great. However, it is missing some useful functionality, like integration with the Python REPL for instance. To remedy this, we can use Elpy.
+
+First, we install using the below code block:
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! elpy)
+#+end_src
+
+Next, we ensure that it loads in at the right time.
+
+#+begin_src emacs-lisp
+(use-package elpy
+  :ensure t
+  :defer t
+  :init
+  (advice-add 'python-mode :before 'elpy-enable))
+#+end_src
+
+Finally, we configure the default Python shell:
+
+#+begin_src emacs-lisp
+(setq python-shell-interpreter "ipython"
+      python-shell-interpreter-args "-i --simple-prompt")
 #+end_src
