@@ -275,6 +275,14 @@ The following code sets the default browser to the system browser, which enables
 * Compatibility with Vim
 There are some useful things in Vim which can be done in Doom, but may need a slightly different workflow. This section explains some of them, and also contains a couple of new keybindings to bring the two behaviors closer in line to each other.
 
+** Normal Mode Remaps
+*** Y
+It bothers me that ~Y~ is bound to ~yy~ instead of ~y$~, since ~D~ is ~d$~ and C is ~c$~. There's apparently a reason for it, but it just doesn't make sense to me.
+
+#+begin_src emacs-lisp
+(map! :n "Y" 'evil-yank-line)
+#+end_src
+
 ** Increment/Decrement at Point
 In Vim, you can use ~C-a~ and ~C-x~ in Normal mode to increment or decrement at point. In Doom, these are remapped to ~g =~ and ~g -~.
 
