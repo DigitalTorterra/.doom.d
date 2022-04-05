@@ -331,6 +331,34 @@ First, I want to remap the function to insert source blocks, which is ~org-inser
     :desc "Insert structure template" "m S" #'org-insert-structure-template)
 #+end_src
 
+*** Smart Collapsing
+The default function for collapsing a source tree is bound to ~Shift-Tab~. This is great, but sometimes, I just want to fold everything except where I'm currently working. The following function helps for that.
+
+#+begin_src emacs-lisp
+(defun org-show-current-heading-tidily ()
+  (interactive)
+  "Show next entry, keeping other entries closed."
+  (if (save-excursion (end-of-line) (outline-invisible-p))
+      (progn (org-show-entry) (show-children))
+    (outline-back-to-heading)
+    (unless (and (bolp) (org-on-heading-p))
+      (org-up-heading-safe)
+      (hide-subtree)
+      (error "Boundary reached"))
+    (org-overview)
+    (org-reveal t)
+    (org-show-entry)
+    (show-children)))
+#+end_src
+
+We define the following keybinding for it:
+
+#+begin_src emacs-lisp
+(map! :after org
+      :leader
+      :desc "Fold all but current" "m F" #'org-show-current-heading-tidily)
+#+end_src
+
 ** Org-Drill
 Org Drill is a useful package which extends Org Mode with the ability to use Anki-like spaced repetition flash cards, with all of the definitions and such stored in an Org file. We first install the package below.
 
