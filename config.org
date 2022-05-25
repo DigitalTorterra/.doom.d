@@ -114,7 +114,7 @@ Tangling is the process by which an org mode file (like this one) is converted i
 - Specifying ~:tangle no~ will make Doom ignore the source block.
 - Specifying ~:tangle <filename>~ will tangle to some other file name (the default being ~config.el~).
 
-* TODO Tasks [11/12]
+* DONE Tasks [12/12]
 - [X] Add personal information
 - [X] Set theme
 - [X] Add functionality for line numbers
@@ -133,11 +133,11 @@ Tangling is the process by which an org mode file (like this one) is converted i
   - [X] Configure syntax highlighting for vimscript
 - [X] Python Configuration [1/1]
   - [X] Elpy
-- [-] Configure org-mode [3/4]
+- [X] Configure org-mode [4/4]
   - [X] Set directory
   - [X] org-capture
   - [X] Make ~org-sync~ executable from Emacs
-  - [ ] org-contacts (do in a more Doom-compatible way)
+  - [X] org-contacts (do in a more Doom-compatible way)
 
 * Bug Fixes
 This section contains any code snippets which don't really add any features, but fix some strange quirk in Doom or Emacs.
@@ -387,19 +387,74 @@ We combine this package with ~org-capture~ to enable the efficient creation of n
 #+end_src
 
 ** Contact Management
+*** ~org-contacts~
 I've been experimenting with using the ~org-contacts~ package to manage my contacts. It includes the ability to apply common tags for things like name, email, and number, as well as useful information like birthdays and just general notes. The following code block configures the ~org-contacts~ package.
 
 #+begin_src emacs-lisp
+;; Set the file path
+(setq org-contacts-dir (concat org-directory "contacts.org"))
+
+;; Initialize the package
 (use-package org-contacts
   :ensure nil
   :after org
-  :custom (org-contacts-files '("~/org/contacts.org")))
+  :custom (org-contacts-files (list org-contacts-dir)))
 #+end_src
+
+*** ~org-ql~
 
 To search through the ~contacts.org~ file, I've been experimenting with ~org-ql~, which uses an unholy amalgamation of Lisp and SQL to allow you to query against an Org file. We install this package with the below code.
 
 #+begin_src emacs-lisp :tangle packages.el
 (package! org-ql)
+#+end_src
+
+*** CRM
+One way I've wanted to expand the capabilities of ~org-contacts~ was to include some sort of CRM (Customer Relationship Management) capabilities. We can represent our desired behavior by adding a few different properties and tags to our existing ~contacts.org~ file.
+
+- ~CONTACT-FREQUENCY~ property: We use this to denote how often to contact anybody in our contacts. If this tag is not specified, then the contact will be ignored.
+- ~CONTACTS-PER-WEEK~ buffer setting: We use this to specify the number of contacts we want to reach out to in any given week.
+
+We define these parameters below:
+
+#+begin_src emacs-lisp
+(setq org-crm-indiv-freq "CONTACT-FREQUENCY")
+(setq org-crm-global-rate "CONTACTS-PER-WEEK")
+#+end_src
+
+The functions below can be used to parse an Org file for these details.
+
+#+begin_src emacs-lisp
+;; Helper functions
+(defun list-next (xs)
+  "Gets the second item in a list"
+  (car (cdr xs)))
+
+;; Get the global rate from the top
+(defun org-element-keyword-get-item (item body)
+  "Parses an Org-mode keyword some attribute"
+  (defun sub-f (body2)
+    (if (eq (car body2) item)
+        (list-next body2)
+        (sub-f (cdr body2))))
+  (sub-f (list-next body)))
+
+(defun org-element-keyword-get-key (body) (org-element-keyword-get-item :key body))
+(defun org-element-keyword-get-value (body) (org-element-keyword-get-item :value body))
+
+(defun org-crm-find-element-rate (body)
+  "Check if a keyword matches `org-crm-global-rate` and get value if so"
+  (if (string-equal org-crm-global-rate (org-element-keyword-get-key body))
+      (org-element-keyword-get-value body)
+      nil))
+
+(defun org-crm-get-rate ()
+  "Parse a buffer to get the CRM rate"
+  (let ((res (org-element-map (org-element-parse-buffer)
+                'keyword (lambda (x) (org-crm-find-element-rate x)))))
+    (if res
+        (string-to-number (car res))
+        nil)))
 #+end_src
 
 ** Syncing Org Files
@@ -423,8 +478,7 @@ Next, we define a function to perform the shell calls.
          (pull-command (format "%s %s %s" base-command remote-path org-directory))
          (push-command (format "%s %s %s" base-command org-directory remote-path)))
     (shell-command pull-command)
-    (shell-command push-command))
-)
+    (shell-command push-command)))
 #+end_src
 
 Finally, we have some code to bind the function we just created to ~SPC m R~.
