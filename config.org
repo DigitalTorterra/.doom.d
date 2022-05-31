@@ -413,16 +413,18 @@ To search through the ~contacts.org~ file, I've been experimenting with ~org-ql~
 One way I've wanted to expand the capabilities of ~org-contacts~ was to include some sort of CRM (Customer Relationship Management) capabilities. We can represent our desired behavior by adding a few different properties and tags to our existing ~contacts.org~ file.
 
 - ~CONTACT-FREQUENCY~ property: We use this to denote how often to contact anybody in our contacts. If this tag is not specified, then the contact will be ignored.
+- ~CONTACT-NEXT-DATE~ property: This will be programatically set the date after which this contact should be reached.
 - ~CONTACTS-PER-WEEK~ buffer setting: We use this to specify the number of contacts we want to reach out to in any given week.
 
 We define these parameters below:
 
 #+begin_src emacs-lisp
 (setq org-crm-indiv-freq "CONTACT-FREQUENCY")
+(setq org-crm-indiv-date "CONTACT-NEXT-DATE")
 (setq org-crm-global-rate "CONTACTS-PER-WEEK")
 #+end_src
 
-The functions below can be used to parse an Org file for these details.
+The functions below can be used to parse an Org file for the global ~CONTACTS-PER-WEEK~ attribute.
 
 #+begin_src emacs-lisp
 ;; Helper functions
@@ -456,6 +458,20 @@ The functions below can be used to parse an Org file for these details.
         (string-to-number (car res))
         nil)))
 #+end_src
+
+Our next job will be to parse the entire file. The goal is to figure out who we need to contact. The way we will do that is:
+
+1. Find all contacts with the ~CONTACT-FREQUENCY~ property, which marks them as being people we are interested in contacting
+2. Sort these contacts according to ~CONTACT-NEXT-DATE~, with uninitialized contaacts at the front and ~CONTACT-FREQUENCY~ being a secondary key
+3. Choose the first ~CONTACTS-PER-WEEK~ contacts and return them
+
+Note: consider giving each contact a UID to avoid ambiguity?
+
+Useful Functions:
+- Entries vs Elements
+- [[https://orgmode.org/worg/dev/org-element-api.html][Element API]]
+- [[https://orgmode.org/manual/Using-the-Property-API.html][Property API]]
+- ~org-map-entries~: iterate through document and apply a function at each entry (for changing parameters)
 
 ** Syncing Org Files
 As part of my Org file management, I use a Raspberry Pi NAS for keeping a backup of my Org directory and syncing across devices. I initially did this as a shell script, but it would be convenient to have easy integration with Emacs.
