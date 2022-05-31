@@ -410,7 +410,10 @@ To search through the ~contacts.org~ file, I've been experimenting with ~org-ql~
 #+end_src
 
 *** CRM
-One way I've wanted to expand the capabilities of ~org-contacts~ was to include some sort of CRM (Customer Relationship Management) capabilities. We can represent our desired behavior by adding a few different properties and tags to our existing ~contacts.org~ file.
+One way I've wanted to expand the capabilities of ~org-contacts~ was to include some sort of CRM (Customer Relationship Management) capabilities. In the following sections, we create such a system.
+
+**** Parameters
+We can represent our desired behavior by adding a few different properties and tags to our existing ~contacts.org~ file.
 
 - ~CONTACT-FREQUENCY~ property: We use this to denote how often to contact anybody in our contacts. If this tag is not specified, then the contact will be ignored.
 - ~CONTACT-NEXT-DATE~ property: This will be programatically set the date after which this contact should be reached.
@@ -424,46 +427,122 @@ We define these parameters below:
 (setq org-crm-global-rate "CONTACTS-PER-WEEK")
 #+end_src
 
-The functions below can be used to parse an Org file for the global ~CONTACTS-PER-WEEK~ attribute.
+We also define a few useful constants below:
 
 #+begin_src emacs-lisp
-;; Helper functions
-(defun list-next (xs)
-  "Gets the second item in a list"
-  (car (cdr xs)))
-
-;; Get the global rate from the top
-(defun org-element-keyword-get-item (item body)
-  "Parses an Org-mode keyword some attribute"
-  (defun sub-f (body2)
-    (if (eq (car body2) item)
-        (list-next body2)
-        (sub-f (cdr body2))))
-  (sub-f (list-next body)))
-
-(defun org-element-keyword-get-key (body) (org-element-keyword-get-item :key body))
-(defun org-element-keyword-get-value (body) (org-element-keyword-get-item :value body))
-
-(defun org-crm-find-element-rate (body)
-  "Check if a keyword matches `org-crm-global-rate` and get value if so"
-  (if (string-equal org-crm-global-rate (org-element-keyword-get-key body))
-      (org-element-keyword-get-value body)
-      nil))
-
-(defun org-crm-get-rate ()
-  "Parse a buffer to get the CRM rate"
-  (let ((res (org-element-map (org-element-parse-buffer)
-                'keyword (lambda (x) (org-crm-find-element-rate x)))))
-    (if res
-        (string-to-number (car res))
-        nil)))
+(setq org-crm-default-date "1970-01-01")
 #+end_src
 
-Our next job will be to parse the entire file. The goal is to figure out who we need to contact. The way we will do that is:
+**** Helper Functions
+Additionally, we define a few helper functions which wrap the existing ~org-element~ API and make a couple frequent operations more straightforward.
+
+#+begin_src emacs-lisp
+;; Key/val accessors
+(defun org-element-get-key (body) (org-element-property :key body))
+(defun org-element-get-value (body) (org-element-property :value body))
+
+;; Conditional getter
+(defun org-element-conditional-access (key body)
+  "Get the value of an element if the key matches the desired key"
+  (if (string-equal key (org-element-get-key body))
+      (org-element-get-value body) nil))
+
+;; Singleton getter
+(defun org-element-get-singleton (type body)
+  "Extract the first element of some type from a section"
+  (car (org-element-map body type (lambda (x) x))))
+
+;; Lisp manipulation
+(defun take (n xs)
+  "Get the first `n` elements of the list xs"
+  (cond ((= 0 n) '())
+        ((not xs) '())
+        (t (cons (car xs) (take (- n 1) (cdr xs))))))
+#+end_src
+
+**** Keyword Parsing
+The function below can be used to parse an Org file for the global ~CONTACTS-PER-WEEK~ attribute, which should be set as a keyword with ~#+CONTACTS-PER-WEEK: n~ at the top of a document.
+
+#+begin_src emacs-lisp
+(defun org-crm-get-rate ()
+  "Parse a buffer to get the CRM rate"
+  (let ((res (org-element-map (org-element-parse-buffer) 'keyword
+               (lambda (x) (org-element-conditional-access org-crm-global-rate x)))))
+    (if res (string-to-number (car res)) nil)))
+#+end_src
+
+**** Contact List Generation
+The goal of the next blocks of code is to get the names of the people who should be contacted next.
+
+#+begin_src emacs-lisp
+;; Handling properties drawer
+(defun org-element-get-properties-drawer (body)
+  (org-element-get-singleton 'properties-drawer body))
+
+(defun org-element-get-property (key properties)
+  "Attempts to get value of property if it exists"
+  (car (org-element-map properties 'node-property
+         (lambda (x) (org-element-conditional-access key x)))))
+
+(defun org-crm-contact-is-contactable (properties)
+  "Returns `t` if contact is contactable, else nil"
+  (if (org-element-get-property org-crm-indiv-freq properties) t nil))
+
+(defun org-crm-contact-date (properties)
+  "Return target date if set, else nil"
+  (org-element-get-property org-crm-indiv-date properties))
+
+(defun org-crm-get-date-if-contactable (body)
+  "Get the contact date from the body of a contact if contactable"
+  (let ((properties (org-element-get-singleton 'property-drawer body)))
+    (if (org-crm-contact-is-contactable properties)
+        (let ((contact-date (org-crm-contact-date properties)))
+          (if contact-date contact-date org-crm-default-date))
+      nil)))
+
+;; Getting Headline Text
+(defun org-element-get-headline-title (body)
+  "Given a headline, this function returns the title"
+  (org-element-property :raw-value body))
+
+;; Headline Parsing
+(defun org-crm-parse-headline (body)
+  "Returns the name and date of the headline if valid"
+  (let ((target-date (org-crm-get-date-if-contactable body))
+        (contact-name (org-element-get-headline-title body)))
+    (when (and target-date contact-name) (cons contact-name target-date))))
+
+;; Disambiguating
+(defun org-crm-prioritize-contacts (c1 c2)
+  "A function which acts as a sorter for contacts"
+  (let ((c1-name (car c1))
+        (c2-name (car c2))
+        (c1-date (cdr c1))
+        (c2-date (cdr c2)))
+    (if (string-equal c1-date c2-date)
+        (string-lessp c1-name c2-name)
+        (string-lessp c1-date c2-date))))
+
+;; Global Functions
+(defun org-crm-get-all-contacts (body)
+  "Gets the name/contact date of all relevant contacts"
+  (org-element-map body 'headline
+    (lambda (x) (org-crm-parse-headline x))))
+
+(defun org-crm-get-n-contacts (body n)
+  "Gets the first `n` contacts based on target date"
+  (let* ((all-contacts (org-crm-get-all-contacts body))
+         (all-contacts-sorted (sort all-contacts (lambda (x1 x2) (org-crm-prioritize-contacts x1 x2)))))
+    (take n all-contacts-sorted)))
+#+end_src
+
+**** Outline
+The plan for this program is described below:
 
 1. Find all contacts with the ~CONTACT-FREQUENCY~ property, which marks them as being people we are interested in contacting
-2. Sort these contacts according to ~CONTACT-NEXT-DATE~, with uninitialized contaacts at the front and ~CONTACT-FREQUENCY~ being a secondary key
-3. Choose the first ~CONTACTS-PER-WEEK~ contacts and return them
+2. Assign unique IDs to all at some point in the process.
+3. Sort these contacts according to ~CONTACT-NEXT-DATE~, with uninitialized contacts at the front and ~CONTACT-FREQUENCY~ being a secondary key
+4. Choose the first ~CONTACTS-PER-WEEK~ contacts and return them
 
 Note: consider giving each contact a UID to avoid ambiguity?
 
