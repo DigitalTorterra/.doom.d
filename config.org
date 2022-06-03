@@ -383,10 +383,10 @@ We combine this package with ~org-capture~ to enable the efficient creation of n
                 ;; The next line specifies the location of the template
                 ("ds" "Spanish" entry
                     (file+headline (concat org-directory "flashcards/spanish.org") "Definitions")
-                    (file (concat org-directory "templates/tpl-vocab.txt")))
+                    (file (concat org-directory "templates/tpl-spanish.txt")))
                 ("de" "English" entry
                     (file+headline (concat org-directory "flashcards/english.org") "Definitions")
-                    (file (concat org-directory "templates/tpl-vocab.txt")))))))
+                    (file (concat org-directory "templates/tpl-english.txt")))))))
 #+end_src
 
 ** Contact Management
