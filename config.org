@@ -373,7 +373,7 @@ We combine this package with ~org-capture~ to enable the efficient creation of n
   (setq org-capture-templates
         (append org-capture-templates
                 ;; This is a grouping of many templates
-                '(("d" "Org-Drill Templates")
+                `(("d" "Org-Drill Templates")
 
                 ;; This is the beginning of a single template:
                 ;; "ds" is the key, "Spanish" is the description,
@@ -382,11 +382,11 @@ We combine this package with ~org-capture~ to enable the efficient creation of n
                 ;; under the "Definitions" headline
                 ;; The next line specifies the location of the template
                 ("ds" "Spanish" entry
-                    (file+headline (concat org-directory "flashcards/spanish.org") "Definitions")
-                    (file (concat org-directory "templates/tpl-spanish.txt")))
+                    (file+headline ,(concat org-directory "flashcards/spanish.org") "Definitions")
+                    (file ,(concat org-directory "templates/tpl-spanish.txt")))
                 ("de" "English" entry
-                    (file+headline (concat org-directory "flashcards/english.org") "Definitions")
-                    (file (concat org-directory "templates/tpl-english.txt")))))))
+                    (file+headline ,(concat org-directory "flashcards/english.org") "Definitions")
+                    (file ,(concat org-directory "templates/tpl-english.txt")))))))
 #+end_src
 
 ** Contact Management
