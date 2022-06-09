@@ -360,12 +360,14 @@ We define the following keybinding for it:
 #+end_src
 
 ** Org-Drill
+*** Installation
 Org Drill is a useful package which extends Org Mode with the ability to use Anki-like spaced repetition flash cards, with all of the definitions and such stored in an Org file. We first install the package below.
 
 #+begin_src emacs-lisp :tangle packages.el
 (package! org-drill)
 #+end_src
 
+*** Capture Templates
 We combine this package with ~org-capture~ to enable the efficient creation of new flashcards. Capture templates can be accessed with ~SPC X~. Doom has some built in. The code below sets a main key as ~d~ to get to the Drill templates, with sub-keys for each specific template.
 
 #+begin_src emacs-lisp
@@ -387,6 +389,25 @@ We combine this package with ~org-capture~ to enable the efficient creation of n
                 ("de" "English" entry
                     (file+headline ,(concat org-directory "flashcards/english.org") "Definitions")
                     (file ,(concat org-directory "templates/tpl-english.txt")))))))
+#+end_src
+
+*** Exporting
+In this section, we develop functionality to export an Org file containing flashcards as a CSV file. The purpose of this is that this file can then be imported to other flashcard software like Anki. It will apply to all headers with the ~:drill:~ tag.
+
+#+begin_src emacs-lisp
+(setq alist-test '((1 2)
+                   (3 4)
+                   (5 6)))
+(assoc 1 alist-test)
+
+(defun org-drill-export-parse-buffer (body)
+  "Parses an AST. Finds relevant headlines, and returns appropriate text"
+  1)
+
+(defun org-drill-export-to-csv ()
+  "Exports an org-drill buffer to CSV."
+  (let ((body (org-element-parse-buffer)))
+    3))
 #+end_src
 
 ** Contact Management
