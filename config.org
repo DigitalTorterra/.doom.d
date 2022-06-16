@@ -308,7 +308,7 @@ This is mostly just for ~org~ files where we want to store information about Vim
 Here, we set the default directory for Org mode files.
 
 #+begin_src emacs-lisp
-(setq org-directory "/home/pfaley2/org/")
+(setq org-directory "/home/pfaley/org/")
 #+end_src
 
 ** LaTeX
