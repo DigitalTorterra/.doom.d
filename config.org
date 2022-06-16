@@ -395,6 +395,21 @@ We combine this package with ~org-capture~ to enable the efficient creation of n
 In this section, we develop functionality to export an Org file containing flashcards as a CSV file. The purpose of this is that this file can then be imported to other flashcard software like Anki. It will apply to all headers with the ~:drill:~ tag.
 
 #+begin_src emacs-lisp
+;;; Parsing Functions
+(defun org-element-headline-contains-tag (headline tag)
+  "Checks if the provided headline contains the requested tag."
+  (let ((tags (org-element-property :tags headline)))
+    (defun inner-f (tag-list)
+      (cond ((null tag-list) nil)
+            ((eq (read (car tag-list)) tag) t)
+            (t (inner-f (cdr tag-list)))))
+    (inner-f tags)))
+
+(defun org-element-headline-get-title (headline)
+  "Gets the title text of a headline"
+  (org-element-property :raw-value headline))
+
+;; Testing
 (setq alist-test '((1 2)
                    (3 4)
                    (5 6)))
