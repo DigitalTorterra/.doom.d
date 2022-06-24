@@ -395,7 +395,7 @@ We combine this package with ~org-capture~ to enable the efficient creation of n
 In this section, we develop functionality to export an Org file containing flashcards as a CSV file. The purpose of this is that this file can then be imported to other flashcard software like Anki. It will apply to all headers with the ~:drill:~ tag.
 
 #+begin_src emacs-lisp
-;;; Parsing Functions
+;;; Functions for parsing org buffer
 (defun org-element-headline-contains-tag (headline tag)
   "Checks if the provided headline contains the requested tag."
   (let ((tags (org-element-property :tags headline)))
@@ -406,8 +406,35 @@ In this section, we develop functionality to export an Org file containing flash
     (inner-f tags)))
 
 (defun org-element-headline-get-title (headline)
-  "Gets the title text of a headline"
+  "Gets the title text of a headline."
   (org-element-property :raw-value headline))
+
+(defun org-element-headline-get-subheaders (headline)
+  "Gets a list of all sub-headers for a headline."
+  (cdr (org-element-contents headline)))
+
+(defun org-element-headline-get-body-text (headline)
+  "Parses all paragraphs in a function and returns a concatenated version"
+  (apply 'concat (org-element-map headline 'paragraph
+                   (lambda (paragraph)
+                     (substring-no-properties (car (org-element-contents paragraph)))))))
+
+(defun org-drill-parse-card (headline)
+  "Parses a headline containing a flashcard."
+  (let* ((pos (cons "Part of Speech" (org-element-headline-get-title headline)))
+         (subs (org-element-headline-get-subheaders headline))
+         (mapped (mapcar (lambda (subheader)
+                           (cons (org-element-headline-get-title subheader)
+                            (org-element-headline-get-body-text subheader)))
+                         subs)))
+    (cons pos mapped)))
+
+(defun org-drill-export-parse-buffer ()
+  "Parses an AST. Finds relevant headlines, and returns appropriate text"
+  (org-element-map (org-element-parse-buffer) 'headline
+      (lambda (headline)
+        (when (org-element-headline-contains-tag headline 'drill)
+          (org-drill-parse-card headline)))))
 
 ;; Testing
 (setq alist-test '((1 2)
@@ -415,13 +442,10 @@ In this section, we develop functionality to export an Org file containing flash
                    (5 6)))
 (assoc 1 alist-test)
 
-(defun org-drill-export-parse-buffer (body)
-  "Parses an AST. Finds relevant headlines, and returns appropriate text"
-  1)
-
 (defun org-drill-export-to-csv ()
   "Exports an org-drill buffer to CSV."
-  (let ((body (org-element-parse-buffer)))
+  (interactive)
+  (let ((data (org-drill-export-parse-buffer)))
     3))
 #+end_src
 
