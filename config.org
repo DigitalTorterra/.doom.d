@@ -429,12 +429,44 @@ In this section, we develop functionality to export an Org file containing flash
                          subs)))
     (cons pos mapped)))
 
-(defun org-drill-export-parse-buffer ()
+(defun org-drill-export-parse-buffer (body)
   "Parses an AST. Finds relevant headlines, and returns appropriate text"
-  (org-element-map (org-element-parse-buffer) 'headline
+  (org-element-map body 'headline
       (lambda (headline)
         (when (org-element-headline-contains-tag headline 'drill)
           (org-drill-parse-card headline)))))
+
+
+;;; Write to CSV
+(defun assoc-get-keys (alist)
+  "Gets all of the keys from an association list"
+  (mapcar 'car alist))
+
+(defun assoc-get-ordered-line (alist keys)
+  "Gets a list of values from `alist` according to `keys`"
+  (mapcar (lambda (key)
+            (string-clean-whitespace (cdr (assoc key alist))))
+          keys))
+
+(defun sanitize-newline (str)
+  "Escape any backslashes in a string"
+  (string-replace "\n" "\\n" str))
+
+(defun csv-write-line (line)
+  "Writes a line to the current buffer"
+  (insert (concat
+           (string-join (mapcar 'sanitize-newline line) ",")
+           "\n")))
+
+;; TODO: standardize csv delimeter (maybe do TSV instead of CSV) and strip out from text
+(defun assoc-write-to-csv (alists fname)
+  "Writes an association list `alist` to file `fname` as a CSV"
+  (let ((alist-keys (assoc-get-keys (car alists)))
+        (buf (generate-new-buffer fname)))
+    (switch-to-buffer buf)
+    (csv-write-line alist-keys)
+    (dolist (alist alists)
+      (csv-write-line (assoc-get-ordered-line alist alist-keys)))))
 
 ;; Testing
 (setq alist-test '((1 2)
@@ -442,11 +474,14 @@ In this section, we develop functionality to export an Org file containing flash
                    (5 6)))
 (assoc 1 alist-test)
 
+
+;;; Output Function
 (defun org-drill-export-to-csv ()
   "Exports an org-drill buffer to CSV."
   (interactive)
-  (let ((data (org-drill-export-parse-buffer)))
-    3))
+  (let ((body (org-element-parse-buffer))
+        (data (org-drill-export-parse-buffer body)))
+    data))
 #+end_src
 
 ** Contact Management
