@@ -394,8 +394,17 @@ We combine this package with ~org-capture~ to enable the efficient creation of n
 *** Exporting
 In this section, we develop functionality to export an Org file containing flashcards as a CSV file. The purpose of this is that this file can then be imported to other flashcard software like Anki. It will apply to all headers with the ~:drill:~ tag.
 
+First, we define a couple of variables which control the delimiting of the CSV files.
+
 #+begin_src emacs-lisp
-;;; Functions for parsing org buffer
+(setq org-drill-export-elem-sep "\t")
+(setq org-drill-export-line-sep "\n")
+(setq org-drill-export-newline-rep " - ")
+#+end_src
+
+Next, we define functionality to parse the ~org~ buffer. These functions are able to parse all headlines with the ~:drill~ tag, exporting the key parameters of each as an association list.
+
+#+begin_src emacs-lisp
 (defun org-element-headline-contains-tag (headline tag)
   "Checks if the provided headline contains the requested tag."
   (let ((tags (org-element-property :tags headline)))
@@ -429,24 +438,58 @@ In this section, we develop functionality to export an Org file containing flash
                          subs)))
     (cons pos mapped)))
 
-(defun org-drill-export-parse-buffer ()
+(defun org-drill-export-parse-buffer (body)
   "Parses an AST. Finds relevant headlines, and returns appropriate text"
-  (org-element-map (org-element-parse-buffer) 'headline
+  (org-element-map body 'headline
       (lambda (headline)
         (when (org-element-headline-contains-tag headline 'drill)
           (org-drill-parse-card headline)))))
+#+end_src
 
-;; Testing
-(setq alist-test '((1 2)
-                   (3 4)
-                   (5 6)))
-(assoc 1 alist-test)
+The next group of functions handles the writing of a list of association lists as a CSV file.
 
-(defun org-drill-export-to-csv ()
+#+begin_src emacs-lisp
+(defun assoc-get-keys (alist)
+  "Gets all of the keys from an association list"
+  (mapcar 'car alist))
+
+(defun assoc-get-ordered-line (alist keys)
+  "Gets a list of values from `alist` according to `keys`"
+  (mapcar (lambda (key)
+            (string-trim (cdr (assoc key alist))))
+          keys))
+
+(defun sanitize-newline (str)
+  "Escape any backslashes in a string"
+  (replace-regexp-in-string "\n" org-drill-export-newline-rep str))
+
+(defun csv-write-line (line)
+  "Writes a line to the current buffer"
+  (insert (concat
+           (string-join (mapcar 'sanitize-newline line) org-drill-export-elem-sep)
+           org-drill-export-line-sep)))
+
+(defun assoc-write-to-csv (alists fname)
+  "Writes an association list `alist` to file `fname` as a CSV"
+  (let ((alist-keys (assoc-get-keys (car alists)))
+        (buf (generate-new-buffer fname)))
+    (switch-to-buffer buf)
+    (csv-write-line alist-keys)
+    (dolist (alist alists)
+      (csv-write-line (assoc-get-ordered-line alist alist-keys)))
+    (write-region nil nil fname)))
+#+end_src
+
+The final function is the one which actually gets called.
+
+#+begin_src emacs-lisp
+;;; Output Function
+(defun org-drill-export-to-csv (fname)
   "Exports an org-drill buffer to CSV."
-  (interactive)
-  (let ((data (org-drill-export-parse-buffer)))
-    3))
+  (interactive "F")
+  (assoc-write-to-csv
+   (org-drill-export-parse-buffer (org-element-parse-buffer))
+   fname))
 #+end_src
 
 ** Contact Management
