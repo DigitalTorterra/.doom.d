@@ -740,8 +740,7 @@ In an effort to learn WebAssembly, I'm reading /The Art of WebAssembly/. This bo
 Next, we have to enable the package.
 
 #+begin_src emacs-lisp
-(use-package! wat-mode
-  :defer t)
+(use-package! wat-mode)
 #+end_src
 
 * Other Features
