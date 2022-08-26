@@ -729,6 +729,14 @@ Finally, we configure the default Python shell:
       python-shell-interpreter-args "-m IPython -i --simple-prompt")
 #+end_src
 
+** WebAssembly
+In an effort to learn WebAssembly, I'm reading /The Art of WebAssembly/. This book teaches WebAssembly as a language, so I need syntax highlighting and other simple tools to work with that. The only issue is Emacs is somewhat lacking in WASM tooling. This is the only package I could find, and it needs to come from external sources.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! wat-mode
+  :recipe (:host github :repo "devonsparks/wat-mode"))
+#+end_src
+
 * Other Features
 ** Typing Tests
 This functionality came when I was trying to learn how to type with Colemak-dhm.
