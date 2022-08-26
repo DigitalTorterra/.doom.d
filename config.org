@@ -737,6 +737,13 @@ In an effort to learn WebAssembly, I'm reading /The Art of WebAssembly/. This bo
   :recipe (:host github :repo "devonsparks/wat-mode"))
 #+end_src
 
+Next, we have to enable the package.
+
+#+begin_src emacs-lisp
+(use-package! wat-mode
+  :defer t)
+#+end_src
+
 * Other Features
 ** Typing Tests
 This functionality came when I was trying to learn how to type with Colemak-dhm.
