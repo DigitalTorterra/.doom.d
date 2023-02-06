@@ -752,3 +752,13 @@ This functionality came when I was trying to learn how to type with Colemak-dhm.
 #+end_src
 
 This package has a couple different options. The first is ~M-x speed-type-text~, which loads a generic text to type. Addiionally, ~M-x speed-type-region~ and ~M-x speed-type-buffer~ let you specify what you type.
+
+* Doom Package Tweaks
+** Projectile
+I don't want Projectile to look in my automatically-generated documentation during searches, so this excludes that.
+
+#+begin_src emacs-lisp
+(after! projectile
+  (add-to-list 'projectile-globally-ignored-directories "*docs")
+  (add-to-list 'projectile-globally-ignored-directories "*_build"))
+#+end_src
