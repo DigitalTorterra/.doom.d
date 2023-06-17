@@ -114,7 +114,7 @@ Tangling is the process by which an org mode file (like this one) is converted i
 - Specifying ~:tangle no~ will make Doom ignore the source block.
 - Specifying ~:tangle <filename>~ will tangle to some other file name (the default being ~config.el~).
 
-* DONE Tasks [12/12]
+* TODO Tasks [12/13]
 - [X] Add personal information
 - [X] Set theme
 - [X] Add functionality for line numbers
@@ -138,6 +138,7 @@ Tangling is the process by which an org mode file (like this one) is converted i
   - [X] org-capture
   - [X] Make ~org-sync~ executable from Emacs
   - [X] org-contacts (do in a more Doom-compatible way)
+- [ ] Fix org-contacts on Pop! OS
 
 * Bug Fixes
 This section contains any code snippets which don't really add any features, but fix some strange quirk in Doom or Emacs.
@@ -169,7 +170,9 @@ The following command is used to set both name and email address.
 We install any non-included themes below.
 
 #+begin_src emacs-lisp :tangle packages.el
+(package! autothemer)
 (package! spacemacs-theme)
+(package! catppuccin-theme)
 #+end_src
 
 *** Default Theme
@@ -308,7 +311,7 @@ This is mostly just for ~org~ files where we want to store information about Vim
 Here, we set the default directory for Org mode files.
 
 #+begin_src emacs-lisp
-(setq org-directory "/home/pfaley2/org/")
+(setq org-directory "/home/pfaley/org/")
 #+end_src
 
 ** LaTeX
@@ -496,7 +499,7 @@ The final function is the one which actually gets called.
 *** ~org-contacts~
 I've been experimenting with using the ~org-contacts~ package to manage my contacts. It includes the ability to apply common tags for things like name, email, and number, as well as useful information like birthdays and just general notes. The following code block configures the ~org-contacts~ package.
 
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :tangle no
 ;; Set the file path
 (setq org-contacts-dir (concat org-directory "contacts.org"))
 
