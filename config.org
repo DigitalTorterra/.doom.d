@@ -494,7 +494,13 @@ The final function is the one which actually gets called.
 
 ** Contact Management
 *** ~org-contacts~
-I've been experimenting with using the ~org-contacts~ package to manage my contacts. It includes the ability to apply common tags for things like name, email, and number, as well as useful information like birthdays and just general notes. The following code block configures the ~org-contacts~ package.
+I've been experimenting with using the ~org-contacts~ package to manage my contacts. It includes the ability to apply common tags for things like name, email, and number, as well as useful information like birthdays and just general notes. The following code block installs the package. I think it used to come pre-bundled, but that seems to no longer be the case.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! org-contacts)
+#+end_src
+
+The following code block configures the package to use our specified contacts file.
 
 #+begin_src emacs-lisp
 ;; Set the file path
