@@ -763,15 +763,19 @@ In this section, we attempt to include GitHub Copilot support. The snippet below
 
 #+begin_src emacs-lisp :tangle packages.el
 (package! copilot
-  :recipe (:host github :repo "zerolfx/copilot.el" :files ("*.el" "dist")))
+  :recipe (:host github :repo "copilot-emacs/copilot.el" :files ("*.el" "dist")))
 #+end_src
 
 Additionally, the below code defines some useful keybindings.
 
 #+begin_src emacs-lisp
+; (setq copilot-node-executable "/home/pfaley/.nvm/versions/node/v20.11.1/bin/npm")
+
 ;; accept completion from copilot and fallback to company
 (use-package! copilot
   :hook (prog-mode . copilot-mode)
+  ;; :config (customize-set-variable 'copilot-node-executable
+;            "/home/pfaley/.nvm/versions/node/v20.11.1/bin/npm")
   :bind (:map copilot-completion-map
               ("<tab>" . 'copilot-accept-completion)
               ("TAB" . 'copilot-accept-completion)
