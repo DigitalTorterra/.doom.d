@@ -782,7 +782,83 @@ Additionally, the below code defines some useful keybindings.
               ("C-TAB" . 'copilot-accept-completion-by-word)
               ("C-<tab>" . 'copilot-accept-completion-by-word)))
 #+end_src
+** LLM Integration
+We use the [[https://github.com/karthink/gptel?tab=readme-ov-file#doom-emacs][gptel]] package to integrate with the LLM. We also use the [[https://github.com/diasjorge/emacs-load-env-vars][load-env-vars]] package to read the endpoint location from a ~.env~ file.
 
+#+begin_src emacs-lisp :tangle packages.el
+(package! gptel)
+(package! load-env-vars)
+#+end_src
+
+Our first step is loading the API key from an environment file.
+
+#+begin_src emacs-lisp
+(setq proxy-env-path "~/.env")
+
+(load-env-vars proxy-env-path)
+(setq openai-api-key
+      (getenv "MODEL_PROXY_API_KEY"))
+#+end_src
+
+With the following configuration:
+
+# #+begin_src emacs-lisp
+# ;;
+# (use-package! gptel
+#  :config
+#  (setq! gptel-api-key "your key"))
+# #+end_src
+
+** Format Shortcuts
+This section is for random ideas I've had to make my life marginally easier.
+
+*** Markdown to Python Lists
+The idea here is that we'd want to convert a bulleted list like this:
+
+- apple
+- bannana
+- cherry
+[
+    'apple',
+    'bannana',
+    'cherry',
+]
+to a Python list of the form:
+
+#+sbegin_src python :tangle no
+[
+    'apple',
+    'banana',
+    'cherry',
+]
+#+end_src
+
+The function to do that is below.
+
+#+begin_src emacs-lisp
+(defun convert-list-to-python (start end)
+  "Print number of lines and characters in the region."
+  (interactive "r")
+  (kill-new
+    (let* ((bullets (buffer-substring start end))
+           (split_list (split-string bullets "\n"))
+           (split_list_filtered (
+               seq-filter
+               (lambda (line) (string-match "[-*] .*" line))
+               split_list))
+           (split_list_cleaned (
+                mapcar
+                (lambda (line) (string-trim-left line "[-*] "))
+                split_list_filtered))
+           (split_list_padded (
+                mapcar
+                (lambda (line) (concat "    '" line "',\n"))
+                split_list_cleaned)))
+      (concat "[\n" (apply 'concat split_list_padded) "]"))))
+#+end_src
+
+#+RESULTS:
+: convert-list-to-python
 * Doom Package Tweaks
 ** Projectile
 I don't want Projectile to look in my automatically-generated documentation during searches, so this excludes that.
