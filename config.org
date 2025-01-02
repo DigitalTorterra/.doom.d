@@ -802,12 +802,22 @@ Our first step is loading the API key from an environment file.
 
 With the following configuration:
 
-# #+begin_src emacs-lisp
-# ;;
-# (use-package! gptel
-#  :config
-#  (setq! gptel-api-key "your key"))
-# #+end_src
+#+begin_src emacs-lisp
+(use-package! gptel
+ :config
+ (setq! gptel-api-key openai-api-key))
+
+;; OPTIONAL configuration
+(setq
+ gptel-model 'gpt-4o
+ gptel-backend
+ (gptel-make-openai "AI Model Proxy"
+   :host "api-internal.8451.com/ai/proxy"
+   :key #'gptel-api-key
+   :endpoint "/chat/completions"
+   :stream t
+   :models '(gpt-4o)))
+#+end_src
 
 ** Format Shortcuts
 This section is for random ideas I've had to make my life marginally easier.
@@ -818,11 +828,7 @@ The idea here is that we'd want to convert a bulleted list like this:
 - apple
 - bannana
 - cherry
-[
-    'apple',
-    'bannana',
-    'cherry',
-]
+
 to a Python list of the form:
 
 #+sbegin_src python :tangle no
