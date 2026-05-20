@@ -308,8 +308,12 @@ This is mostly just for ~org~ files where we want to store information about Vim
 Here, we set the default directory for Org mode files.
 
 #+begin_src emacs-lisp
-(setq org-directory "/home/pfaley/org/")
+(setq org-directory "/Users/p870220/org/")
+(setq org-agenda-files (list (concat org-directory "todo/8451.org")))
 #+end_src
+
+#+RESULTS:
+| /Users/p870220/org/todo/8451.org |
 
 ** LaTeX
 Here, we add any code for working with math inside LaTeX.
@@ -695,6 +699,42 @@ Finally, we have some code to bind the function we just created to ~SPC m R~.
     :desc "Sync org directory" "m R" #'org-sync)
 #+end_src
 
+** Postman Knock-off
+The [[https://github.com/federicotdn/verb][verb]] package enables org mode to act as a Postman replacement.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! verb)
+#+end_src
+
+This command adds a sub-menu in the Org branch of SPC keybindings.
+
+#+begin_src emacs-lisp
+(map! :leader
+    :desc "Verb Requests" "m v" #'verb-command-map)
+#+end_src
+
+** Custom Agenda View
+#+begin_src emacs-lisp
+(defun org-cmp-breadcrumb (a b)
+  "Compare agenda items by their full outline path (breadcrumb)."
+  (let* ((breadcrumb-a (or (get-text-property 0 'breadcrumbs a) ""))
+         (breadcrumb-b (or (get-text-property 0 'breadcrumbs b) "")))
+    (cond
+     ((string< breadcrumb-a breadcrumb-b) -1)
+     ((string< breadcrumb-b breadcrumb-a) 1)
+     (t 0))))
+
+(setq org-agenda-cmp-user-defined 'org-cmp-breadcrumb)
+
+(setq org-agenda-custom-commands
+  '(("d" "Priority Tasks"
+     alltodo ""
+     ((org-agenda-overriding-header "📋 Priority Tasks")
+      (org-agenda-prefix-format "  %i %-50b")
+      (org-agenda-sorting-strategy '(priority-down todo-state-up user-defined-up))
+      (org-agenda-skip-function '(org-agenda-skip-entry-if 'notregexp "\\[#[A-Z]\\]"))))))
+#+end_src
+
 * Language-Specific Tweaks
 In this section, we perform any customization that is specific to a given programming language.
 
@@ -749,15 +789,7 @@ Next, we have to enable the package.
 (use-package! wat-mode)
 #+end_src
 
-* Other Features
-** Typing Tests
-This functionality came when I was trying to learn how to type with Colemak-dhm.
-
-#+begin_src emacs-lisp :tangle packages.el
-(package! speed-type)
-#+end_src
-
-This package has a couple different options. The first is ~M-x speed-type-text~, which loads a generic text to type. Addiionally, ~M-x speed-type-region~ and ~M-x speed-type-buffer~ let you specify what you type.
+* LLMs
 ** GitHub Copilot
 In this section, we attempt to include GitHub Copilot support. The snippet below installs the library.
 
@@ -782,7 +814,7 @@ Additionally, the below code defines some useful keybindings.
               ("C-TAB" . 'copilot-accept-completion-by-word)
               ("C-<tab>" . 'copilot-accept-completion-by-word)))
 #+end_src
-** LLM Integration
+** ~gptel~ (for Chat)
 We use the [[https://github.com/karthink/gptel?tab=readme-ov-file#doom-emacs][gptel]] package to integrate with the LLM. We also use the [[https://github.com/diasjorge/emacs-load-env-vars][load-env-vars]] package to read the endpoint location from a ~.env~ file.
 
 #+begin_src emacs-lisp :tangle packages.el
@@ -819,6 +851,55 @@ With the following configuration:
    :models '(gpt-4o)))
 #+end_src
 
+** ~aidermacs~
+The [[https://github.com/MatthewZMD/aidermacs][aidermacs]] package integrate the Aider LLM tool into Emacs.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! aidermacs
+  :recipe (:host github :repo "MatthewZMD/aidermacs"))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! aidermacs
+ :config
+ (setenv "AZURE_API_KEY" openai-api-key)
+ (setenv "AZURE_API_VERSION" "2023-12-01-preview")
+ (setenv "AZURE_API_BASE" "https://api-internal.8451.com/ai/proxy/")
+
+ :custom
+ (aidermacs-default-chat-mode 'architect)
+ (aidermacs-default-model "azure/gpt-4o"))
+#+end_src
+
+** ~claude-code-ide~
+[[https://github.com/manzaltu/claude-code-ide.el][claude-code-ide]] provides Claude Code integration for Emacs.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! claude-code-ide
+  :recipe (:host github :repo "manzaltu/claude-code-ide.el"))
+#+end_src
+
+#+begin_src emacs-lisp
+(use-package! claude-code-ide
+  ;; :bind ("C-c C-'" . claude-code-ide-menu) ; Set your favorite keybinding
+  :config
+  ;; DEBUGGING: Disable vterm anti-flicker optimization to test if this causes the redraw issue
+  (setq claude-code-ide-vterm-anti-flicker nil)
+  (claude-code-ide-emacs-tools-setup)) ; Optionally enable Emacs MCP tools
+
+(map! :leader
+ :desc "Claude" "d" #'claude-code-ide-menu)
+#+end_src
+
+* Other Features
+** Typing Tests
+This functionality came when I was trying to learn how to type with Colemak-dhm.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! speed-type)
+#+end_src
+
+This package has a couple different options. The first is ~M-x speed-type-text~, which loads a generic text to type. Addiionally, ~M-x speed-type-region~ and ~M-x speed-type-buffer~ let you specify what you type.
 ** Format Shortcuts
 This section is for random ideas I've had to make my life marginally easier.
 
@@ -865,6 +946,19 @@ The function to do that is below.
 
 #+RESULTS:
 : convert-list-to-python
+** Mermaid Diagrams
+We rely on the ~mermaid_mode~ project.
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! mermaid-mode)
+#+end_src
+** EPub Reading
+We set up [[https://depp.brause.cc/nov.el/][nov.el]].
+
+#+begin_src emacs-lisp :tangle packages.el
+(package! nov)
+#+end_src
+
 * Doom Package Tweaks
 ** Projectile
 I don't want Projectile to look in my automatically-generated documentation during searches, so this excludes that.
